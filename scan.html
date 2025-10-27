@@ -1,0 +1,295 @@
+<html lang="pl"><head><link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiIiwic2hvcnRfbmFtZSI6IiIsInRoZW1lX2NvbG9yIjoiIzEwMTMxNyIsImJhY2tncm91bmRfY29sb3IiOiIjMTAxMzE3IiwiZGlzcGxheSI6InN0YW5kYWxvbmUifQ==">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <title>mObywatel</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="assets/app/main.css">
+    <link rel="stylesheet" href="assets/app/scan.css">
+
+    <!-- Ikony -->
+    <link rel="icon" type="image/x-icon" href="assets/app/logo.png">
+    <link rel="apple-touch-icon" href="assets/app/logo.png">
+    <link rel="shortcut icon" href="assets/app/logo.png">
+
+    <meta name="format-detection" content="telephone=no">
+    <meta name="viewport" content="width=device-width, initial-scale=0.8, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <!-- Zewnętrzna biblioteka -->
+    <script src="assets/app/html5-qrcode.min.js"></script><link type="text/css" rel="stylesheet" id="dark-mode-custom-link"><link type="text/css" rel="stylesheet" id="dark-mode-general-link"><style lang="en" type="text/css" id="dark-mode-custom-style"></style><style lang="en" type="text/css" id="dark-mode-native-style"></style><style lang="en" type="text/css" id="dark-mode-native-sheet"></style>
+<style>:is([id*='google_ads_iframe'],[id*='taboola-'],.taboolaHeight,.taboola-placeholder,#top-ad,#credential_picker_container,#credentials-picker-container,#credential_picker_iframe,[id*='google-one-tap-iframe'],#google-one-tap-popup-container,.google-one-tap__module,.google-one-tap-modal-div,#amp_floatingAdDiv,#ez-content-blocker-container) {display:none!important;min-height:0!important;height:0!important;}</style></head>
+<body>
+    <div class="top_grid_fixed">
+        <div class="action_grid_fixed">
+            <img src="assets/app/images/back_blue.png" class="back_img_fixed">
+            <p onclick="sendTo('qr.html')" class="back_text_fixed">Kod QR</p>
+        </div>
+        <p class="title_text_fixed">Zeskanuj kod QR</p>
+        <img src="assets/app/images/help.png" class="help_img_fixed">
+    </div>
+
+    <div class="container">
+        <p class="description">Umieść kod QR w ramce, aby go zeskanować.</p>
+        
+        <div class="scan-frame">
+            <div class="warning-box">
+                <div class="warning-content">
+                    <span class="warning-icon">!</span>
+                    <p class="warning-text">Upewnij się, że kod QR pochodzi z wiarygodnego źródła.</p>
+                    <span class="warning-close">×</span>
+                </div>
+            </div>
+            <div id="reader" style="position: relative;"></div>
+            <div class="frame-border">
+                <div class="corner top-left"></div>
+                <div class="corner top-right"></div>
+                <div class="corner bottom-left"></div>
+                <div class="corner bottom-right"></div>
+            </div>
+        </div>
+
+        <button class="manual-input">Wpisz kod</button>
+    </div>
+
+    <div class="error">
+        <div class="opacity"></div>
+        <div class="error_box" style="display: none;">
+        </div>
+    </div>
+
+    <div class="bottom_bar">
+        <div class="bottom_bar_grid">
+            <div class="bottom_element_grid" send="documents.html">
+                <div class="bottom_element_image documents"></div>
+                <p class="bottom_element_text">Dokumenty</p>
+            </div>
+            <div class="bottom_element_grid" send="services.html">
+                <div class="bottom_element_image services"></div>
+                <p class="bottom_element_text">Usługi</p>
+            </div>
+            <div class="bottom_element_grid" send="qr.html">
+                <div class="bottom_element_image qr qr_open"></div>
+                <p class="bottom_element_text open">Kod QR</p>
+            </div>
+            <div class="bottom_element_grid" send="more.html">
+                <div class="bottom_element_image more"></div>
+                <p class="bottom_element_text">Więcej</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="code-input-container">
+        <div class="code-input-overlay"></div>
+        <div class="code-input-box">
+            <div class="code-input-header">
+                <span class="code-input-title">Kod</span>
+                <span class="code-input-close" onclick="closeCodeInput()">Zamknij</span>
+            </div>
+            <p class="code-input-subtitle">Wpisz lub wklej kod.</p>
+            <div class="code-input-field-container">
+                <input type="number" class="code-input-field" placeholder=" " maxlength="6">
+            </div>
+            <button class="code-input-submit" onclick="submitCode()" disabled="disabled">Dalej</button>
+        </div>
+    </div>
+
+    <!-- JS -->
+    <script src="assets/app/bar.js"></script>
+<script src="assets/app/bar.js"></script>
+<script>
+  // Ustawienia nawigacji
+  if (localStorage.getItem('top') === 'card') {
+    const back = document.querySelector('.back_text_fixed');
+    back.textContent = 'mDowód';
+    back.onclick = () => { sendTo('card'); };
+  }
+
+  // Zamknięcie ostrzeżenia
+  function closeWarning() {
+    document.querySelector('.warning-box')?.classList.add('hidden');
+  }
+  document.querySelector('.warning-close')?.addEventListener('click', closeWarning);
+
+  // Modal błędu
+  function showError(title = 'Wystąpił błąd', desc = 'Nie możemy wyświetlić Twoich danych.<br>Spróbuj ponownie później.') {
+    const errorBox = document.querySelector('.error_box');
+    if (!errorBox) return;
+
+    errorBox.style.display = 'block';
+    errorBox.innerHTML = `
+      <div class="loading"></div>
+      <p class="error_title">Ładowanie...</p>
+    `;
+    document.querySelector('.error').classList.add('error_open');
+
+    setTimeout(() => {
+      errorBox.innerHTML = `
+        <div class="error_icon">
+          <svg width="70" height="70" viewBox="0 0 70 70">
+            <circle cx="35" cy="35" r="35" fill="#FF3B30"/>
+            <path d="M47 23L23 47M23 23L47 47" stroke="white" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <p class="error_title">${title}</p>
+        <p class="error_description">${desc}</p>
+        <button class="error_button retry" onclick="retryAction()">Spróbuj ponownie</button>
+        <button class="error_button back" onclick="sendTo('qr.html')">Wróć</button>
+      `;
+    }, 500);
+  }
+  function retryAction() { startScanner(); }
+
+  // Helper: bezpieczny fetch JSON
+  async function postJson(url, payload) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    // Jeśli serwer zwróci HTML (np. 404/403), nie próbuj .json()
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(`HTTP ${res.status} ${res.statusText}: ${text.slice(0, 200)}`);
+    }
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) {
+      const text = await res.text();
+      throw new Error(`Oczekiwano JSON, otrzymano: ${ct || 'brak'}\n${text.slice(0, 200)}`);
+    }
+    return res.json();
+  }
+
+  // End-point weryfikacji (usunęliśmy niezdefiniowane "params")
+  const VALIDATE_URL = '/qr/validate';
+
+  function onScanSuccess(decodedText) {
+    // Wysyłamy odczytany QR
+    postJson(VALIDATE_URL, { qrCode: decodedText })
+      .then(result => {
+        const found = !!result?.found;
+        stopScanner();
+        if (found) {
+          askForPermission(null, decodedText);
+        } else {
+          showError('Nie znaleziono', 'Kod QR jest nieprawidłowy lub wygasł.');
+        }
+      })
+      .catch(err => {
+        console.error('validate(qr) failed:', err);
+        stopScanner();
+        showError('Błąd sieci/serwera', 'Spróbuj ponownie za chwilę.');
+      });
+  }
+  function onScanFailure(_error) {
+    // Ignorujemy pojedyncze nieudane ramki
+  }
+
+  let html5QrCode = null;
+  let selectedCameraId = null;
+
+  async function startScanner() {
+    try {
+      // Wymagany secure context
+      if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+        throw new Error('Strona musi działać przez HTTPS, aby użyć kamery.');
+      }
+
+      // Pobierz listę kamer i wybierz tylną, jeśli istnieje
+      const devices = await Html5Qrcode.getCameras();
+      if (!devices || !devices.length) throw new Error('Nie wykryto kamery w urządzeniu.');
+      const back = devices.find(d => /back|rear|environment/i.test(d.label));
+      selectedCameraId = (back || devices[0]).id;
+
+      if (!html5QrCode) html5QrCode = new Html5Qrcode('reader');
+
+      await html5QrCode.start(
+        { deviceId: { exact: selectedCameraId } },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        onScanSuccess,
+        onScanFailure
+      );
+    } catch (e) {
+      console.error('startScanner error:', e);
+      // Fallback – spróbuj bez exact (np. Safari i dziwne etykiety)
+      try {
+        if (!html5QrCode) html5QrCode = new Html5Qrcode('reader');
+        await html5QrCode.start(
+          { facingMode: 'environment' }, // bez "exact"
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          onScanSuccess,
+          onScanFailure
+        );
+      } catch (e2) {
+        console.error('fallback start failed:', e2);
+        showError('Brak dostępu do kamery', 'Sprawdź uprawnienia przeglądarki i połączenie HTTPS.');
+      }
+    }
+  }
+
+  async function stopScanner() {
+    try { await html5QrCode?.stop(); } catch(_) {}
+    try { await html5QrCode?.clear(); } catch(_) {}
+  }
+
+  // Ręczne wpisanie kodu
+  document.querySelector('.manual-input').addEventListener('click', () => {
+    document.querySelector('.code-input-container').classList.add('active');
+    document.querySelector('.code-input-field').focus();
+  });
+
+  function closeCodeInput() {
+    document.querySelector('.code-input-container').classList.remove('active');
+    setTimeout(() => {
+      document.querySelector('.code-input-field').value = '';
+      document.querySelector('.code-input-field-container').classList.remove('error');
+    }, 300);
+  }
+  document.querySelector('.code-input-overlay').addEventListener('click', closeCodeInput);
+
+  async function submitCode() {
+    const input = document.querySelector('.code-input-field');
+    const value = (input.value || '').replace(/\D/g, '').slice(0, 6);
+
+    if (value.length !== 6) return;
+
+    try {
+      const result = await postJson(VALIDATE_URL, { code: value });
+      const found = !!result?.found;
+      closeCodeInput();
+      if (found) {
+        askForPermission(value, null);
+      } else {
+        showError('Nie znaleziono', 'Kod jest nieprawidłowy lub wygasł.');
+      }
+    } catch (err) {
+      console.error('validate(code) failed:', err);
+      closeCodeInput();
+      showError('Błąd sieci/serwera', 'Spróbuj ponownie za chwilę.');
+    }
+  }
+  window.submitCode = submitCode; // bo onclick w HTML
+
+  function askForPermission(code, qrCode){
+    if (code) localStorage.setItem('code', code);
+    if (qrCode) localStorage.setItem('qrCode', qrCode);
+    sendTo('share');
+  }
+
+  // Walidacja pola i aktywacja przycisku
+  document.querySelector('.code-input-field').addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
+    document.querySelector('.code-input-submit').disabled = e.target.value.length !== 6;
+  });
+
+  // Start skanera po załadowaniu
+  document.addEventListener('DOMContentLoaded', startScanner);
+</script>
+<script src="assets/app/manifest.js"></script>
+<script src="assets/app/cache.js"></script>
+
+
+</body></html>
